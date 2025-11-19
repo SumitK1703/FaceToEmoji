@@ -1,17 +1,56 @@
-# React + Vite
+# 🎭 Real-time Biometric Emotion & AR Scanner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A client-side AI application that performs real-time face detection, emotion analysis, age/gender estimation, and Augmented Reality (AR) overlays directly in the browser.
 
-Currently, two official plugins are available:
+Built with **React**, **Vite**, and **TensorFlow.js** (via face-api.js).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+* **Real-time Emotion Recognition:** Detects 7 distinct emotions (Happy, Sad, Angry, Neutral, etc.) with high confidence.
+* **Biometric Analysis:** Estimates Age and Gender on the fly.
+* **AR Overlay:** Dynamic emoji and data badges that track and follow the user's face movements in real-time.
+* **Smart Stability Logic:**
+    * *Quote Generator:* Context-aware inspirational quotes that change only when your mood changes.
+    * *Jitter Reduction:* Age/Gender predictions are throttled to prevent flickering.
+* **Privacy First:** All AI processing happens **locally in the browser**. No video data is ever sent to a server.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+* **Frontend Library:** React.js (Vite)
+* **AI Engine:** face-api.js (TensorFlow.js wrapper)
+* **Styling:** CSS3 (Flexbox/Grid)
+* **State Management:** React Hooks (`useState`, `useRef`, `useEffect`)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# FaceToEmoji
+## ⚙️ Installation & Run
+
+1.  **Clone the repository**
+    ```bash
+    git clone [https://github.com/SumitK1703/FaceToEmoji.git](https://github.com/SumitK1703/FaceToEmoji.git)
+    cd FaceToEmoji
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Download AI Models**
+    * Ensure the `public/models` folder contains the weights for `tiny_face_detector`, `face_expression_model`, and `age_gender_model`.
+    * *Note: These are included in this repo under /public/models.*
+
+4.  **Start the app**
+    ```bash
+    npm run dev
+    ```
+
+## 🧠 How it Works
+
+1.  **Initialization:** The app loads 3 neural networks asynchronously into the browser memory.
+2.  **Detection Loop:** A `setInterval` loop runs every 100ms, grabbing a frame from the webcam.
+3.  **Inference:** The frame is passed through the Tiny Face Detector and Expression Net.
+4.  **Rendering:** React uses the coordinate data (`x`, `y`, `width`, `height`) to draw the AR layer over the video feed.
+
+## 📸 Screenshots
+
+## 🤝 Credits
+* [face-api.js](https://github.com/justadudewhohacks/face-api.js) for the incredible models.
