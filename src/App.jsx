@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import * as faceapi from 'face-api.js';
-import { getQuote } from './quotes'; 
+import { getQuote } from './quotes';
 
 const emojiMap = {
   neutral: '😐',
@@ -15,19 +15,15 @@ const emojiMap = {
 
 function App() {
   const videoRef = useRef();
+  const lastEmotionRef = useRef("");
+  const frameRef = useRef(0);
   
-  // --- REFS FOR STABILITY (NEW) ---
-  const lastEmotionRef = useRef(""); // To track the previous emotion
-  const frameRef = useRef(0);        // To count frames for age throttling
-  
-  // State
   const [currentEmoji, setCurrentEmoji] = useState("😐");
-  const [currentQuote, setCurrentQuote] = useState("Show me your face...");
+  const [currentQuote, setCurrentQuote] = useState("Waiting for face...");
   const [faceBox, setFaceBox] = useState(null); 
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
 
-  // A. Load AI Models
   const loadModels = async () => {
     try {
       await Promise.all([
@@ -37,22 +33,22 @@ function App() {
       ]);
       startVideo();
     } catch (err) {
-      console.error("Model Loading Failed", err);
+      console.error(err);
     }
   };
 
-  // B. Start Camera
   const startVideo = () => {
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: "user" } 
+    })
       .then((currentStream) => {
         if (videoRef.current) {
           videoRef.current.srcObject = currentStream;
         }
       })
-      .catch((err) => console.error("Camera error:", err));
+      .catch((err) => console.error(err));
   };
 
-  // C. The Detection Loop
   const handleVideoOnPlay = () => {
     setInterval(async () => {
       if (videoRef.current) {
@@ -64,26 +60,29 @@ function App() {
         .withAgeAndGender();
 
         if (detections.length > 0) {
-          const data = detections[0];
+          const displaySize = {
+            width: videoRef.current.offsetWidth,
+            height: videoRef.current.offsetHeight
+          };
+
+          const resizedDetections = faceapi.resizeResults(detections, displaySize);
+          const data = resizedDetections[0];
           
-          // 1. AR Position (Keep this fast/smooth)
           setFaceBox(data.detection.box);
 
-          // 2. Emotion Calculation
           const expressions = data.expressions;
           const maxEmotion = Object.keys(expressions).reduce((a, b) => 
             expressions[a] > expressions[b] ? a : b
           );
           
-          // Always update emoji for responsiveness
           setCurrentEmoji(emojiMap[maxEmotion]);
 
-          // --- STABILITY LOGIC START ---
           if (lastEmotionRef.current !== maxEmotion) {
             const newQuote = getQuote(maxEmotion);
             setCurrentQuote(newQuote);
-            lastEmotionRef.current = maxEmotion; // Remember this emotion
+            lastEmotionRef.current = maxEmotion;
           }
+
           frameRef.current++;
           if (frameRef.current % 30 === 0) {
             setAge(Math.round(data.age));
@@ -110,12 +109,9 @@ function App() {
           ref={videoRef} 
           autoPlay 
           muted 
-          width="720" 
-          height="560"
           onPlay={handleVideoOnPlay} 
         />
         
-        {/* AR OVERLAY */}
         {faceBox && (
           <div 
             className="ar-layer"
@@ -126,7 +122,6 @@ function App() {
               top: faceBox.y,
             }}
           >
-            {/* Show Age/Gender only if we have data */}
             {age && (
               <div className="info-badge">
                 {gender} ({age})
